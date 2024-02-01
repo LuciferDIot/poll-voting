@@ -5,7 +5,7 @@ export interface ICategory extends Document {
 }
 
 const CategorySchema: Schema = new Schema({
-    name: { type: String, required: true }
+    name: { type: String, required: true, unique: true },
 });
 
-export default mongoose.model<ICategory>('Category', CategorySchema);
+export const Category = mongoose.models.Category || mongoose.model('Category', CategorySchema);

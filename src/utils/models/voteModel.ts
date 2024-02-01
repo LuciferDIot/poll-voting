@@ -12,4 +12,4 @@ const VoteSchema: Schema = new Schema({
     user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true }
 });
 
-export default mongoose.model<IVote>('Vote', VoteSchema);
+export const Vote = mongoose.models.Vote || mongoose.model('Vote', VoteSchema);

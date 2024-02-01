@@ -10,4 +10,4 @@ const OptionSchema: Schema = new Schema({
     poll_id: { type: Schema.Types.ObjectId, ref: 'Poll', required: true }
 });
 
-export default mongoose.model<IOption>('Option', OptionSchema);
+export const Option = mongoose.models.Option || mongoose.model('Option', OptionSchema);

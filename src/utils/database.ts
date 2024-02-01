@@ -11,7 +11,6 @@ export const connectToDataBase = async () => {
         const URL = "mongodb://0.0.0.0:27017/PollVote";
         try {
             await mongoose.connect(URL, {
-                useNewUrlParser: true,
                 useUnifiedTopology: true,
             } as ConnectOptions);
             isConnected = true;

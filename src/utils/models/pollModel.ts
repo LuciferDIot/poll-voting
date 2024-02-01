@@ -4,6 +4,7 @@ export interface IPoll extends Document {
     title: string;
     description: string;
     category_id: Schema.Types.ObjectId;
+    user_id: Schema.Types.ObjectId;
     // img: Schema.Types.Buffer;
 }
 
@@ -15,7 +16,8 @@ const PollSchema: Schema = new Schema({
         ref: "Category",
         required: true,
     },
+    user_id: { type: Schema.Types.ObjectId, ref: 'User' }
     // img: { type: Schema.Types.Buffer },
 });
 
-export default mongoose.model<IPoll>("Poll", PollSchema);
+export const Poll = mongoose.models.Poll || mongoose.model("Poll", PollSchema);

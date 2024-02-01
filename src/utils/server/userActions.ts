@@ -1,56 +1,165 @@
-// auth.ts
-import { Request, Response } from 'express';
-import User, { IUser } from '../models/userModel';
-import bcrypt from 'bcrypt';
-import { connectToDataBase } from '../database';
+"use server";
+import {User} from "../models/userModel";
+import bcrypt from "bcrypt";
+import { connectToDataBase } from "../database";
 
-export const signup = async (req: Request, res: Response) => {
-  try {
-    connectToDataBase();
-    const { username, email, password } = req.body;
+export async function signup({ formData }: { formData: FormData }) {
+    try {
+        console.log("started");
 
-    const existingUser = await User.findOne({ $or: [{ username }, { email }] });
-    if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+        await connectToDataBase();
+
+        const username = formData.get("username")?.toString();
+        const email = formData.get("email")?.toString();
+        const password = formData.get("password")?.toString();
+
+        console.log(username, email, password);
+
+        if (!username || !email || !password) {
+            return {
+                success: false,
+                message: "All fields are required!",
+                user: null,
+            };
+        }
+
+        const existingUserName = await User.findOne({ username }).exec();
+        const existingEmail = await User.findOne({ email }).exec();
+
+        if (existingUserName) {
+            return {
+                success: false,
+                message: "UserName already exists",
+                user: null,
+            }
+        } 
+        else if (existingEmail) {
+            return {
+                success: false,
+                message: "Email already exists",
+                user: null,
+            }
+        } 
+        else {
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const newUser = await User.create({
+                username,
+                email,
+                password: hashedPassword,
+            });
+
+            const userResponse = {
+                _id: newUser._id,
+                username: newUser.username,
+                email: newUser.email,
+            };
+
+            return {
+                success: true,
+                message: "User saved successfully",
+                user: userResponse,
+            };
+        }
+    } catch (error) {
+        console.error("Error during signup:", error);
+
+        return {
+            success: false,
+            message: "An unexpected error occurred",
+            user: null,
+        };
     }
+}
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+export const login = async ({ formData }: { formData: FormData }) => {
+    try {
+        await connectToDataBase();
+        const username = formData.get("username")?.toString();
+        const password = formData.get("password")?.toString();
 
-    const newUser: IUser = new User({
-      username,
-      email,
-      password: hashedPassword
-    });
+        if (!username || !password) {
+            return {
+                success: false,
+                message: "Username and password are required fields",
+                user: null
+            };
+        }
 
-    await newUser.save();
+        const user: {
+            _id: number
+            username: string;
+            email: string;
+            password: string;
+        } | null = await User.findOne({ username });
 
-    res.status(201).json({ message: 'User created successfully' });
-  } catch (error) {
-    console.error('Error in signup:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
+        if (!user) {
+            return {
+                success: false,
+                message: "User not found",
+                user: null
+            };
+        }
+
+        const passwordMatch = bcrypt.compare(password, user.password);
+
+        if (!passwordMatch) {
+            return {
+                success: false,
+                message: "Invalid password",
+                user: null
+            };
+        }
+
+        // Password is correct, generate JWT token or set session here
+
+        return {
+            success: true,
+            message: "Login successful",
+            user: user
+        };
+    } catch (error) {
+        console.error("Error in login:", error);
+        return {
+            success: false,
+            message: "Server error",
+            user: null
+        };
+    }
 };
 
-export const login = async (req: Request, res: Response) => {
-  try {
-    connectToDataBase();
-    const { username, password } = req.body;
 
-    const user = await User.findOne({ username });
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+export async function getUserById(userId: number) {
+    try {
+        await connectToDataBase();
+
+        const user = await User.findOne({ _id: userId });
+
+        if (!user) {
+            return {
+                success: false,
+                message: "user not found",
+            };
+        }
+
+        return {
+            success: true,
+            message: "Found",
+            category_id: user._id,
+        };
+    } catch (error) {
+        if (error instanceof Error) {
+            return {
+                success: false,
+                message: error.message,
+                category_id: null,
+            };
+        } else {
+            return {
+                success: false,
+                message: "An unexpected error occurred",
+                category_id: null,
+            };
+        }
     }
-
-    const passwordMatch = await bcrypt.compare(password, user.password);
-    if (!passwordMatch) {
-      return res.status(401).json({ message: 'Invalid password' });
-    }
-
-    // Password is correct, you can generate JWT token or set session here
-
-    res.status(200).json({ message: 'Login successful' });
-  } catch (error) {
-    console.error('Error in login:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
+}

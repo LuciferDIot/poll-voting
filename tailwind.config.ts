@@ -19,6 +19,8 @@ const config: Config = {
     function ({ addVariant }:any) {
         addVariant('child', '& > *');
         addVariant('child-hover', '& > *:hover');
+        addVariant('child-input', '& input');
+        addVariant('child-label', '& label');
     }
 ],
 };
