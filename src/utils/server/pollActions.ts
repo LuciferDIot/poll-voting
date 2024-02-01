@@ -3,6 +3,11 @@ import Poll from "../models/pollModel";
 import Option from "../models/optionModel";
 import Category from "../models/categoryModel";
 import Vote from "../models/voteModel";
+import { connectToDataBase } from "../database";
+
+// import multer from 'multer';
+// const storage = multer.memoryStorage();
+// const upload = multer({ storage });
 
 export async function createPoll({
     formData,
@@ -18,6 +23,7 @@ export async function createPoll({
         formData.get("category_id")?.toString() ?? null;
 
     try {
+        await connectToDataBase();
         if (title && title.length > 0 && count > 0) {
             const poll = await Poll.create({
                 title: title,
@@ -79,6 +85,9 @@ export async function editPoll({
         formData.get("category_id")?.toString() ?? null;
 
     try {
+        
+        await connectToDataBase();
+
         if (title && title.length > 0) {
             await Poll.findOneAndUpdate(
                 { _id: pollId },
@@ -139,6 +148,9 @@ export async function editPoll({
 
 export async function deletePoll(pollId: string) {
     try {
+
+        await connectToDataBase();
+
         const deletedPoll = await Poll.findByIdAndDelete(pollId);
 
         if (!deletedPoll) {
@@ -172,6 +184,9 @@ export async function deletePoll(pollId: string) {
 
 export async function getPollById(pollId: string) {
     try {
+
+        await connectToDataBase();
+
         const poll = await Poll.findOne({ _id:pollId }).populate('category_id');
 
         if (!poll) {
@@ -211,6 +226,10 @@ export async function getPollById(pollId: string) {
 
 export async function voteToPoll(pollId: string, optionId: string, userId: string) {
     try {
+
+        
+        await connectToDataBase();
+
         const existingVote = await Vote.findOne({ poll_id: pollId, user_id: userId });
         if (existingVote) {
             return {
@@ -244,6 +263,9 @@ export async function voteToPoll(pollId: string, optionId: string, userId: strin
 
 export async function getAllPolls() {
     try {
+
+        await connectToDataBase();
+
         const polls = await Poll.find().populate('category_id');
         return {
             success: true,
@@ -260,6 +282,9 @@ export async function getAllPolls() {
 
 export async function getAllCategories() {
     try {
+
+        await connectToDataBase();
+
         const categories = await Category.find();
         return {
             success: true,
