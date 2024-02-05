@@ -14,10 +14,6 @@ export default function Page({}: Props) {
     const [error, setError] = useState<string | null>(null);
     const router = useRouter();
 
-    useEffect(() => {
-        toast.error("Hello coders it was easy!");
-    }, []);
-
     const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
         setIsLoading(true);

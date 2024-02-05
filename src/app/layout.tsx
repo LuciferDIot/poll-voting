@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import Navbar from "@/components/Navbar/Navbar";
 
 const roboto = Roboto({
     weight: "400",
@@ -23,6 +24,7 @@ export default function RootLayout({
         <html lang="en">
             <body className="font-sans">
                 <Toaster position="top-center" />
+                <Navbar />
                 {children}
             </body>
         </html>
